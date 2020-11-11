@@ -1,0 +1,104 @@
+name: Build and deploy Pull Request Review App
+env:
+  PR_SOURCE: ${{ github.head_ref }}
+  PR_REPOSITORY: ${{ github.repository }}
+  PR_REVIEWAPP_MESSAGE: 'Build was successful and a review app can be found here: https://${{ github.head_ref }}.london.cloudapps.digital'
+on:
+  pull_request:
+    branches: main
+    types: [opened, synchronize, reopened, edited]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Get the source code from the repository
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+    # Print the repository and pr source branch
+    - name: Pull Request Details
+      run: echo "$PR_SOURCE" "$PR_REPOSITORY" "$PR_REVIEWAPP_MESSAGE"
+   #  - name: Get PR Number
+      # Find the PR number
+     #  uses: jwalton/gh-find-current-pr@v1
+     #  id: findPr
+     #  with:
+     #    github-token: ${{ secrets.GITHUB_TOKEN }}
+      # This will echo "Your PR is 7", or be skipped if there is no current PR.
+     #  run: echo "Your PR is ${PR}"
+     #  if: success() && steps.findPr.outputs.number
+     #  env:
+     #    PR_NUMBER: ${{ steps.findPr.outputs.pr }}
+    # Set Manifest environment variables
+   
+    # Build
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.101
+    - name: Install dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+    - name: Test
+      run: dotnet test --no-restore --verbosity normal
+    - name: Publish
+      run: dotnet publish -c Release -o portal-source 
+    - name: Upload Publish Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        path: ./portal-source 
+    # Deploy review app
+    - name: Deploy for review
+      uses: citizen-of-planet-earth/cf-cli-action@master 
+      with:
+        cf_api: https://api.london.cloud.service.gov.uk
+        cf_username: ${{ secrets.SANDBOX_CF_USERNAME }}
+        cf_password: ${{ secrets.SANDBOX_CF_PASSWORD }}
+        cf_org: dof-dss
+        cf_space: Sandbox
+        command: push TDG-Demo--$PR_SOURCE
+    - name: Set Environment variables
+      uses: citizen-of-planet-earth/cf-cli-action@master 
+      with:
+        cf_api: https://api.london.cloud.service.gov.uk
+        cf_username: ${{ secrets.SANDBOX_CF_USERNAME }}
+        cf_password: ${{ secrets.SANDBOX_CF_PASSWORD }}
+        cf_org: dof-dss
+        cf_space: Sandbox
+        command: set-env TDG-Demo--$PR_SOURCE ASPNETCORE_ENVIRONMENT Review
+    - name: Set Review status
+      uses: citizen-of-planet-earth/cf-cli-action@master 
+      with:
+        cf_api: https://api.london.cloud.service.gov.uk
+        cf_username: ${{ secrets.SANDBOX_CF_USERNAME }}
+        cf_password: ${{ secrets.SANDBOX_CF_PASSWORD }}
+        cf_org: dof-dss
+        cf_space: Sandbox
+        command: set-env TDG-Demo--$PR_SOURCE PR_REVIEW True
+    - name: Set Review name
+      uses: citizen-of-planet-earth/cf-cli-action@master 
+      with:
+        cf_api: https://api.london.cloud.service.gov.uk
+        cf_username: ${{ secrets.SANDBOX_CF_USERNAME }}
+        cf_password: ${{ secrets.SANDBOX_CF_PASSWORD }}
+        cf_org: dof-dss
+        cf_space: Sandbox
+        command: set-env TDG-Demo--$PR_SOURCE PR_NAME $PR_SOURCE
+    - name: Restage app
+      uses: citizen-of-planet-earth/cf-cli-action@master 
+      with:
+        cf_api: https://api.london.cloud.service.gov.uk
+        cf_username: ${{ secrets.SANDBOX_CF_USERNAME }}
+        cf_password: ${{ secrets.SANDBOX_CF_PASSWORD }}
+        cf_org: dof-dss
+        cf_space: Sandbox
+        command: restage TDG-Demo--$PR_SOURCE
+    - name: Comment PR
+      uses: thollander/actions-comment-pull-request@master
+      with:
+        message: 'Build was successful and a review app can be found here: https://TDG-Demo--${{ github.head_ref }}.london.cloudapps.digital'
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+      
