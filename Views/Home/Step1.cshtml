@@ -1,0 +1,102 @@
+@model tdg_demo.Models.ExampleModel
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<form method="post">
+   <partial name="../Components/_errorSummary.cshtml" />
+   <span class="govuk-caption-xl">(Step 1 of *)</span>
+<div class="govuk-form-group">
+  <fieldset class="govuk-fieldset">
+    <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+      <h1 class="govuk-fieldset__heading">
+        About You
+      </h1>
+    </legend>
+<div class="govuk-form-group">
+  <label class="govuk-label" for="event-name">
+    Surname
+  </label>
+  <span asp-validation-for="Surname" class="govuk-error-message"></span>
+  <input class="govuk-input" asp-for="Surname" type="text">
+</div>
+<div class="govuk-form-group">
+  <label class="govuk-label" for="event-name">
+    Forename
+  </label>
+  <span asp-validation-for="Forename" class="govuk-error-message"></span>
+  <input class="govuk-input" asp-for="Forename" type="text">
+</div>
+<div class="govuk-form-group">
+  <label class="govuk-label" for="event-name">
+    Date of Birth
+  </label>
+  <div class="govuk-form-group">
+    <span id="passport-issued-hint" class="govuk-hint">
+      For example, 27 3 2007
+    </span>
+    <div class="govuk-date-input" id="date-of-birth">
+      <div class="govuk-date-input__item">
+        <label class="govuk-label govuk-date-input__label" for="DateOfBirth_Day">
+            Day
+          </label>
+          <input class="govuk-input govuk-date-input__input govuk-input--width-2" asp-for="DateOfBirth_Day" type="text" pattern="[0-9]*" inputmode="numeric">
+
+      </div>
+      <div class="govuk-date-input__item">
+       <label class="govuk-label govuk-date-input__label" for="DateOfBirth_Month">
+            Month
+          </label>
+          <input class="govuk-input govuk-date-input__input govuk-input--width-2" asp-for="DateOfBirth_Month" type="text" pattern="[0-9]*" inputmode="numeric">
+
+      </div>
+      <div class="govuk-date-input__item">
+   <label class="govuk-label govuk-date-input__label" for="DateOfBirth_Year">
+            Year
+          </label>
+          <input class="govuk-input govuk-date-input__input govuk-input--width-4" asp-for="DateOfBirth_Year"  type="text" pattern="[0-9]*" inputmode="numeric">
+
+      </div>
+    </div>
+
+</div>
+<div class="govuk-form-group">
+  <label class="govuk-label" for="PlaceOfBirth">
+    Place of Birth
+  </label>
+   <span asp-validation-for="PlaceOfBirth" class="govuk-error-message"></span>
+  <input class="govuk-input" asp-for="PlaceOfBirth" type="text">
+</div>
+</fieldset>
+</div>
+<div class="govuk-form-group">
+  <fieldset class="govuk-fieldset">
+    <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+      <h1 class="govuk-fieldset__heading">
+        Were you born in Northern Ireland?
+      </h1>
+    </legend>
+   <span asp-validation-for="BornInNI" class="govuk-error-message"></span>
+      <div class="govuk-radios govuk-radios--inline">
+        <div class="govuk-radios__item">
+          <input class="govuk-radios__input" asp-for="BornInNI" type="radio" value="true">
+          <label class="govuk-label govuk-radios__label" for="BornInNI">
+            Yes
+          </label>
+        </div>
+        <div class="govuk-radios__item">
+          <input class="govuk-radios__input"  asp-for="BornInNI" type="radio" value="false">
+          <label class="govuk-label govuk-radios__label" for="BornInNI-2">
+            No
+          </label>
+        </div>
+      </div>
+</div>
+  </fieldset>
+</div>
+</div>
+<button class="govuk-button" data-module="govuk-button" type="submit">
+  Continue
+</button>
+</form>
